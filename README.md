@@ -4,7 +4,7 @@
 
 [![build-bazzite](https://github.com/ublue-os/bazzite/actions/workflows/build.yml/badge.svg)](https://github.com/ublue-os/bazzite/actions/workflows/build.yml) [![build-bazzite-isos](https://github.com/ublue-os/bazzite/actions/workflows/build_iso.yml/badge.svg)](https://github.com/ublue-os/bazzite/actions/workflows/build_iso.yml)
 
-# [🇺🇸](https://github.com/ublue-os/bazzite/blob/main/README.md) [🇪🇸](https://github.com/ublue-os/bazzite/blob/main/README-SPA.md) [🇮🇩](https://github.com/ublue-os/bazzite/blob/main/README-ID.md)
+# [🇺🇸](https://github.com/ublue-os/bazzite/blob/main/README.md) [🇪🇸](https://github.com/ublue-os/bazzite/blob/main/README-SPA.md) [🇮🇩](https://github.com/ublue-os/bazzite/blob/main/README-ID.md) [:cn:](https://github.com/ublue-os/bazzite/blob/main/README-zh-cn.md)
 
 <p align="center">
   <a href="https://download.bazzite.gg/"><img src="/repo_content/download.png?raw=true" alt="Download Bazzite"/></a>
@@ -13,22 +13,27 @@
 ---
 
 # Table of Contents
-- [Features for **All** Bazzite Images](#about--features)
-  - [Features for **Desktop** Images](#desktop)
-  - [Features for **Steam Deck / HTPC** Images](#steam-deckhome-theater-pcs-htpcs)
-    - [Alternative Handhelds](#alternative-handhelds)
-  - [Features for **GNOME** Images](#gnome)
-  - [Features from Upstream](#features-from-upstream)
-- [Why](#why)
-- [Showcase](#showcase)
-- [Documentation & Newsletters](#documentation--newsletters)
-- [Custom Packages](#custom-packages)
-- [Image Verification](#verification)
-- [Secure Boot](#secure-boot)
-- [Metrics](#contributor-metrics)
-- [Special Thanks](#special-thanks)
-- [Building Your Own](#build-your-own)
-- [Community](#join-the-community)
+- [Language](#---cn)
+- [Table of Contents](#table-of-contents)
+  - [About \& Features](#about--features)
+    - [Desktop](#desktop)
+    - [Steam Deck/Home Theater PCs (HTPCs)](#steam-deckhome-theater-pcs-htpcs)
+      - [Alternative Handhelds](#alternative-handhelds)
+    - [GNOME](#gnome)
+    - [Features from Upstream](#features-from-upstream)
+      - [Universal Blue](#universal-blue)
+      - [Features from Fedora Linux (Kinoite \& Silverblue)](#features-from-fedora-linux-kinoite--silverblue)
+  - [Why](#why)
+  - [Showcase](#showcase)
+  - [Documentation \& Newsletters](#documentation--newsletters)
+  - [Custom Packages](#custom-packages)
+  - [Verification](#verification)
+  - [Secure Boot](#secure-boot)
+    - [Contributor Metrics](#contributor-metrics)
+      - [Star History](#star-history)
+  - [Special Thanks](#special-thanks)
+  - [Build Your Own](#build-your-own)
+  - [Join The Community](#join-the-community)
 ---
 
 ## About & Features
@@ -81,13 +86,14 @@ Common variant available as `bazzite`, suitable for desktop computers.
 > [!IMPORTANT]  
 > **ISOs can be downloaded from our [releases page](https://github.com/ublue-os/bazzite/releases), and a helpful install guide can be found [here](https://universal-blue.discourse.group/docs?topic=30).**
 
-Rebase from an existing upstream Fedora Atomic to this image:
+Rebase from an existing upstream Fedora Atomic to this image if you want **Open Source GPU Drivers**: 
+(Please note: Mesa's Open Source option for NVIDIA GPUs, NVK is still prone to errors at the time of writing, for any issues relating to NVK [please submit a report with Mesa]([url](https://docs.mesa3d.org/bugs.html)), not Ublue/Bazzite)
 
 ```bash
 rpm-ostree rebase ostree-unverified-registry:ghcr.io/ublue-os/bazzite:stable
 ```
 
-or for devices with Nvidia GPUs:
+or for devices with Nvidia GPUs wanting the **NVIDIA Proprietary Drivers**:
 
 ```bash
 rpm-ostree rebase ostree-unverified-registry:ghcr.io/ublue-os/bazzite-nvidia:stable
@@ -123,6 +129,7 @@ Variant designed for usage as an alternative to SteamOS on the Steam Deck, and f
 - Applies SteamOS's kernel parameters.
 - Color calibrated display profiles for matte and reflective Steam Deck screens included.
 - Default-disabled power-user features, including:
+    - Service for low-risk undervolting of the Steam Deck as well as AMD Framework Laptops via [RyzenAdj](https://github.com/FlyGoat/RyzenAdj) and [Ryzen SMU](https://gitlab.com/leogx9r/ryzen_smu), see `ryzenadj.service` and `/etc/default/ryzenadj`.
     - Service for limiting the max charge level of the battery, see `batterylimit.service` and `/etc/default/batterylimit`. <sup><sub>(Works even when the device is off)</sub></sup>
     - Built in support for display overclocking. For example, add `GAMESCOPE_OVERRIDE_REFRESH_RATE=40,70` to `/etc/environment`.
     - 32GB RAM mod your Steam Deck? Enjoy double the maximum VRAM amount, automatically applied. <sup><sub>(Can you share your soldering skills?)</sub></sup>
@@ -188,7 +195,7 @@ Rebase from an existing upstream Fedora Atomic to this image:
 rpm-ostree rebase ostree-unverified-registry:ghcr.io/ublue-os/bazzite-gnome:stable
 ```
 
-To rebase an existing ostree system to the **desktop with Nvidia drivers** release:
+To rebase an existing ostree system to a Desktop Enviornment with the **Proprietary NVIDIA Drivers** release:
 
 ```bash
 rpm-ostree rebase ostree-unverified-registry:ghcr.io/ublue-os/bazzite-gnome-nvidia:stable
@@ -269,7 +276,7 @@ Ported SteamOS and ChimeraOS packages, among others used by Bazzite, are built o
 | gamescope-shaders                                                                                   | ![Build Status](https://copr.fedorainfracloud.org/coprs/kylegospo/bazzite/package/gamescope-shaders/status_image/last_build.png?)                           |
 | galileo-mura                                                                                        | ![Build Status](https://copr.fedorainfracloud.org/coprs/kylegospo/bazzite/package/galileo-mura/status_image/last_build.png?)                                |
 | [gnome-randr-rust](https://github.com/maxwellainatchi/gnome-randr-rust)                             | ![Build Status](https://copr.fedorainfracloud.org/coprs/kylegospo/bazzite/package/gnome-randr-rust/status_image/last_build.png?)                            |
-| gnome-shell                                                                                         | ![Build Status](https://copr.fedorainfracloud.org/coprs/kylegospo/bazzite/package/gnome-shell/status_image/last_build.png?)                                 |
+| gnome-shell                                                                                         | ![Build Status](https://copr.fedorainfracloud.org/coprs/ublue-os/staging/package/gnome-shell/status_image/last_build.png?)                                 |
 | gnome-shell-extension-bazzite-menu                                                                  | ![Build Status](https://copr.fedorainfracloud.org/coprs/kylegospo/bazzite/package/gnome-shell-extension-bazzite-menu/status_image/last_build.png?)          |
 | [gnome-shell-extension-caribou-blocker](https://extensions.gnome.org/extension/1326/block-caribou/) | ![Build Status](https://copr.fedorainfracloud.org/coprs/kylegospo/bazzite/package/gnome-shell-extension-caribou-blocker/status_image/last_build.png?)       |
 | [gnome-shell-extension-compiz-windows-effect](https://github.com/hermes83/compiz-windows-effect)    | ![Build Status](https://copr.fedorainfracloud.org/coprs/kylegospo/bazzite/package/gnome-shell-extension-compiz-windows-effect/status_image/last_build.png?) |
@@ -279,7 +286,7 @@ Ported SteamOS and ChimeraOS packages, among others used by Bazzite, are built o
 | jupiter-fan-control                                                                                 | ![Build Status](https://copr.fedorainfracloud.org/coprs/kylegospo/bazzite/package/jupiter-fan-control/status_image/last_build.png?)                         |
 | jupiter-hw-support-[btrfs](https://gitlab.com/popsulfr/steamos-btrfs)                               | ![Build Status](https://copr.fedorainfracloud.org/coprs/kylegospo/bazzite/package/jupiter-hw-support-btrfs/status_image/last_build.png?)                    |
 | jupiter-sd-mounting-[btrfs](https://gitlab.com/popsulfr/steamos-btrfs)                              | ![Build Status](https://copr.fedorainfracloud.org/coprs/kylegospo/bazzite/package/jupiter-hw-support-btrfs/status_image/last_build.png?)                    |
-| kf6-kio                                                                                             | ![Build Status](https://copr.fedorainfracloud.org/coprs/kylegospo/bazzite/package/kf6-kio/status_image/last_build.png?)                                     |
+| kf6-kio                                                                                             | ![Build Status](https://copr.fedorainfracloud.org/coprs/ublue-os/staging/package/kf6-kio/status_image/last_build.png?)                                     |
 | [mangohud](https://github.com/flightlessmango/MangoHud)                                             | ![Build Status](https://copr.fedorainfracloud.org/coprs/kylegospo/bazzite-multilib/package/mangohud/status_image/last_build.png?)                           |
 | mesa                                                                                                | ![Build Status](https://copr.fedorainfracloud.org/coprs/kylegospo/bazzite-multilib/package/mesa/status_image/last_build.png?)                               |
 | pipewire                                                                                            | ![Build Status](https://copr.fedorainfracloud.org/coprs/kylegospo/bazzite-multilib/package/pipewire/status_image/last_build.png?)                           |
