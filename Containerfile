@@ -7,6 +7,9 @@ ARG SOURCE_IMAGE="${SOURCE_IMAGE:-$BASE_IMAGE_NAME-$BASE_IMAGE_FLAVOR}"
 ARG BASE_IMAGE="ghcr.io/ublue-os/${SOURCE_IMAGE}"
 ARG FEDORA_MAJOR_VERSION="${FEDORA_MAJOR_VERSION:-40}"
 
+FROM ghcr.io/ublue-os/akmods:${KERNEL_FLAVOR}-${FEDORA_MAJOR_VERSION} as akmods
+FROM ghcr.io/ublue-os/akmods-extra:${KERNEL_FLAVOR}-${FEDORA_MAJOR_VERSION} as akmods-extra
+
 FROM ${BASE_IMAGE}:${FEDORA_MAJOR_VERSION} AS bazzite
 
 ARG IMAGE_NAME="${IMAGE_NAME:-bazzite}"
@@ -29,7 +32,6 @@ RUN curl -Lo /usr/bin/copr https://raw.githubusercontent.com/ublue-os/COPR-comma
     curl -Lo /etc/yum.repos.d/_copr_kylegospo-latencyflex.repo https://copr.fedorainfracloud.org/coprs/kylegospo/LatencyFleX/repo/fedora-"${FEDORA_MAJOR_VERSION}"/kylegospo-LatencyFleX-fedora-"${FEDORA_MAJOR_VERSION}".repo && \
     curl -Lo /etc/yum.repos.d/_copr_kylegospo-obs-vkcapture.repo https://copr.fedorainfracloud.org/coprs/kylegospo/obs-vkcapture/repo/fedora-"${FEDORA_MAJOR_VERSION}"/kylegospo-obs-vkcapture-fedora-"${FEDORA_MAJOR_VERSION}".repo?arch=x86_64 && \
     curl -Lo /etc/yum.repos.d/_copr_kylegospo-wallpaper-engine-kde-plugin.repo https://copr.fedorainfracloud.org/coprs/kylegospo/wallpaper-engine-kde-plugin/repo/fedora-"${FEDORA_MAJOR_VERSION}"/kylegospo-wallpaper-engine-kde-plugin-fedora-"${FEDORA_MAJOR_VERSION}".repo && \
-    curl -Lo /etc/yum.repos.d/_copr_kylegospo-vk_hdr_layer.repo https://copr.fedorainfracloud.org/coprs/kylegospo/vk_hdr_layer/repo/fedora-"${FEDORA_MAJOR_VERSION}"/kylegospo-vk_hdr_layer-fedora-"${FEDORA_MAJOR_VERSION}".repo?arch=x86_64 && \
     curl -Lo /etc/yum.repos.d/_copr_ycollet-audinux.repo https://copr.fedorainfracloud.org/coprs/ycollet/audinux/repo/fedora-"${FEDORA_MAJOR_VERSION}"/ycollet-audinux-fedora-"${FEDORA_MAJOR_VERSION}".repo && \
     curl -Lo /etc/yum.repos.d/_copr_kylegospo-rom-properties.repo https://copr.fedorainfracloud.org/coprs/kylegospo/rom-properties/repo/fedora-"${FEDORA_MAJOR_VERSION}"/kylegospo-rom-properties-fedora-"${FEDORA_MAJOR_VERSION}".repo && \
     curl -Lo /etc/yum.repos.d/_copr_kylegospo-joycond.repo https://copr.fedorainfracloud.org/coprs/kylegospo/joycond/repo/fedora-"${FEDORA_MAJOR_VERSION}"/kylegospo-joycond-fedora-"${FEDORA_MAJOR_VERSION}".repo && \
@@ -69,33 +71,26 @@ RUN rpm-ostree cliwrap install-to-root / && \
     ostree container commit
 
 # Setup firmware
-RUN mkdir -p /tmp/mediatek-firmware && \
-    curl -Lo /tmp/mediatek-firmware/WIFI_MT7922_patch_mcu_1_1_hdr.bin https://gitlab.com/kernel-firmware/linux-firmware/-/raw/8f08053b2a7474e210b03dbc2b4ba59afbe98802/mediatek/WIFI_MT7922_patch_mcu_1_1_hdr.bin?inline=false && \
-    curl -Lo /tmp/mediatek-firmware/WIFI_RAM_CODE_MT7922_1.bin https://gitlab.com/kernel-firmware/linux-firmware/-/raw/8f08053b2a7474e210b03dbc2b4ba59afbe98802/mediatek/WIFI_RAM_CODE_MT7922_1.bin?inline=false && \
-    xz --check=crc32 /tmp/mediatek-firmware/WIFI_MT7922_patch_mcu_1_1_hdr.bin && \
-    xz --check=crc32 /tmp/mediatek-firmware/WIFI_RAM_CODE_MT7922_1.bin && \
-    mv -vf /tmp/mediatek-firmware/* /usr/lib/firmware/mediatek/ && \
-    rm -rf /tmp/mediatek-firmware && \
-    mkdir -p /tmp/linux-firmware-neptune && \
-    curl -Lo /tmp/linux-firmware-neptune/cs35l41-dsp1-spk-cali.bin https://gitlab.com/evlaV/linux-firmware-neptune/-/raw/jupiter-20231113.1/cs35l41-dsp1-spk-cali.bin && \
-    curl -Lo /tmp/linux-firmware-neptune/cs35l41-dsp1-spk-cali.wmfw https://gitlab.com/evlaV/linux-firmware-neptune/-/raw/jupiter-20231113.1/cs35l41-dsp1-spk-cali.wmfw && \
-    curl -Lo /tmp/linux-firmware-neptune/cs35l41-dsp1-spk-prot.bin https://gitlab.com/evlaV/linux-firmware-neptune/-/raw/jupiter-20231113.1/cs35l41-dsp1-spk-prot.bin && \
-    curl -Lo /tmp/linux-firmware-neptune/cs35l41-dsp1-spk-prot.wmfw https://gitlab.com/evlaV/linux-firmware-neptune/-/raw/jupiter-20231113.1/cs35l41-dsp1-spk-prot.wmfw && \
+RUN mkdir -p /tmp/linux-firmware-neptune && \
+    curl -Lo /tmp/linux-firmware-neptune/cs35l41-dsp1-spk-cali.bin https://gitlab.com/evlaV/linux-firmware-neptune/-/raw/jupiter-20240503.1/cs35l41-dsp1-spk-cali.bin && \
+    curl -Lo /tmp/linux-firmware-neptune/cs35l41-dsp1-spk-cali.wmfw https://gitlab.com/evlaV/linux-firmware-neptune/-/raw/jupiter-20240503.1/cs35l41-dsp1-spk-cali.wmfw && \
+    curl -Lo /tmp/linux-firmware-neptune/cs35l41-dsp1-spk-prot.bin https://gitlab.com/evlaV/linux-firmware-neptune/-/raw/jupiter-20240503.1/cs35l41-dsp1-spk-prot.bin && \
+    curl -Lo /tmp/linux-firmware-neptune/cs35l41-dsp1-spk-prot.wmfw https://gitlab.com/evlaV/linux-firmware-neptune/-/raw/jupiter-20240503.1/cs35l41-dsp1-spk-prot.wmfw && \
     xz --check=crc32 /tmp/linux-firmware-neptune/cs35l41-dsp1-spk-{cali.bin,cali.wmfw,prot.bin,prot.wmfw} && \
     mv -vf /tmp/linux-firmware-neptune/* /usr/lib/firmware/cirrus/ && \
     rm -rf /tmp/linux-firmware-neptune && \
     mkdir -p /tmp/linux-firmware-galileo && \
-    curl https://gitlab.com/evlaV/linux-firmware-neptune/-/archive/jupiter-20231113.1/linux-firmware-neptune-jupiter-20231113.1.tar.gz?path=ath11k/QCA206X -o /tmp/linux-firmware-galileo/ath11k.tar.gz && \
+    curl https://gitlab.com/evlaV/linux-firmware-neptune/-/archive/jupiter-20240503.1/linux-firmware-neptune-jupiter-20240503.1.tar.gz?path=ath11k/QCA206X -o /tmp/linux-firmware-galileo/ath11k.tar.gz && \
     tar --strip-components 1 --no-same-owner --no-same-permissions --no-overwrite-dir -xvf /tmp/linux-firmware-galileo/ath11k.tar.gz -C /tmp/linux-firmware-galileo && \
     xz --check=crc32 /tmp/linux-firmware-galileo/ath11k/QCA206X/hw2.1/* && \
     mv -vf /tmp/linux-firmware-galileo/ath11k/QCA206X /usr/lib/firmware/ath11k/QCA206X && \
     rm -rf /tmp/linux-firmware-galileo/ath11k && \
     rm -rf /tmp/linux-firmware-galileo/ath11k.tar.gz && \
-    curl -Lo /tmp/linux-firmware-galileo/hpbtfw21.tlv https://gitlab.com/evlaV/linux-firmware-neptune/-/raw/jupiter-20231113.1/qca/hpbtfw21.tlv && \
-    curl -Lo /tmp/linux-firmware-galileo/hpnv21.309 https://gitlab.com/evlaV/linux-firmware-neptune/-/raw/jupiter-20231113.1/qca/hpnv21.309 && \
-    curl -Lo /tmp/linux-firmware-galileo/hpnv21.bin https://gitlab.com/evlaV/linux-firmware-neptune/-/raw/jupiter-20231113.1/qca/hpnv21.bin && \
-    curl -Lo /tmp/linux-firmware-galileo/hpnv21g.309 https://gitlab.com/evlaV/linux-firmware-neptune/-/raw/jupiter-20231113.1/qca/hpnv21g.309 && \
-    curl -Lo /tmp/linux-firmware-galileo/hpnv21g.bin https://gitlab.com/evlaV/linux-firmware-neptune/-/raw/jupiter-20231113.1/qca/hpnv21g.bin && \
+    curl -Lo /tmp/linux-firmware-galileo/hpbtfw21.tlv https://gitlab.com/evlaV/linux-firmware-neptune/-/raw/jupiter-20240503.1/qca/hpbtfw21.tlv && \
+    curl -Lo /tmp/linux-firmware-galileo/hpnv21.309 https://gitlab.com/evlaV/linux-firmware-neptune/-/raw/jupiter-20240503.1/qca/hpnv21.309 && \
+    curl -Lo /tmp/linux-firmware-galileo/hpnv21.bin https://gitlab.com/evlaV/linux-firmware-neptune/-/raw/jupiter-20240503.1/qca/hpnv21.bin && \
+    curl -Lo /tmp/linux-firmware-galileo/hpnv21g.309 https://gitlab.com/evlaV/linux-firmware-neptune/-/raw/jupiter-20240503.1/qca/hpnv21g.309 && \
+    curl -Lo /tmp/linux-firmware-galileo/hpnv21g.bin https://gitlab.com/evlaV/linux-firmware-neptune/-/raw/jupiter-20240503.1/qca/hpnv21g.bin && \
     xz --check=crc32 /tmp/linux-firmware-galileo/* && \
     mv -vf /tmp/linux-firmware-galileo/* /usr/lib/firmware/qca/ && \
     rm -rf /tmp/linux-firmware-galileo && \
@@ -112,8 +107,8 @@ RUN mkdir -p /tmp/mediatek-firmware && \
     ostree container commit
 
 # Add ublue packages, add needed negativo17 repo and then immediately disable due to incompatibility with RPMFusion
-COPY --from=ghcr.io/ublue-os/akmods:${KERNEL_FLAVOR}-${FEDORA_MAJOR_VERSION} /rpms /tmp/akmods-rpms
-COPY --from=ghcr.io/ublue-os/akmods-extra:${KERNEL_FLAVOR}-${FEDORA_MAJOR_VERSION} /rpms /tmp/akmods-rpms
+COPY --from=akmods /rpms /tmp/akmods-rpms
+COPY --from=akmods-extra /rpms /tmp/akmods-rpms
 RUN sed -i 's@enabled=0@enabled=1@g' /etc/yum.repos.d/_copr_ublue-os-akmods.repo && \
     curl -Lo /etc/yum.repos.d/negativo17-fedora-multimedia.repo https://negativo17.org/repos/fedora-multimedia.repo && \
     rpm-ostree install \
@@ -230,12 +225,17 @@ RUN rpm-ostree override replace \
     --from repo=updates \
         libopenmpt \
         || true && \
+    rpm-ostree override replace \
+    --experimental \
+    --from repo=updates \
+        llvm-libs \
+        || true && \
     rpm-ostree override remove \
         glibc32 \
         || true && \
     ostree container commit
 
-# Install Valve's patched Mesa, Pipewire, and Xwayland
+# Install Valve's patched Mesa, Pipewire, Bluez, and Xwayland
 # Install patched switcheroo control with proper discrete GPU support
 RUN rpm-ostree override remove \
         mesa-va-drivers-freeworld && \
@@ -258,10 +258,17 @@ RUN rpm-ostree override remove \
         pipewire-libs \
         pipewire-pulseaudio \
         pipewire-utils \
+        bluez \
+        bluez-obexd \
+        bluez-cups \
+        bluez-libs \
         xorg-x11-server-Xwayland && \
     rpm-ostree install \
         mesa-va-drivers-freeworld \
-        mesa-vdpau-drivers-freeworld.x86_64 && \
+        mesa-vdpau-drivers-freeworld.x86_64 \
+        libaacs \
+        libbdplus \
+        libbluray && \
     rpm-ostree override replace \
     --experimental \
     --from repo=copr:copr.fedorainfracloud.org:sentry:switcheroo-control_discrete \
@@ -288,6 +295,7 @@ RUN rpm-ostree install \
         compsize \
         input-remapper \
         system76-scheduler \
+        ryzenadj \
         powertop \
         i2c-tools \
         udica \
@@ -411,10 +419,10 @@ RUN rpm-ostree install \
         latencyflex-vulkan-layer \
         vkBasalt.x86_64 \
         vkBasalt.i686 \
+        obs-vkcapture.x86_64 \
+        obs-vkcapture.i686 \
         mangohud.x86_64 \
-        mangohud.i686 \
-        vk_hdr_layer.x86_64 \
-        vk_hdr_layer.i686 && \
+        mangohud.i686 && \
     if grep -q "kinoite" <<< "${BASE_IMAGE_NAME}"; then \
         rpm-ostree override remove \
             gamemode \
@@ -504,7 +512,6 @@ RUN if grep -q "kinoite" <<< "${BASE_IMAGE_NAME}"; then \
             gnome-shell-extension-bazzite-menu \
             gnome-shell-extension-hotedge \
             gnome-shell-extension-caffeine \
-            gnome-shell-extension-auto-power-profile \
             rom-properties-gtk3 \
             openssh-askpass && \
         rpm-ostree override remove \
@@ -533,6 +540,16 @@ RUN rpm-ostree install \
         cage \
         wlr-randr && \
     sed -i~ -E 's/=.\$\(command -v (nft|ip6?tables-legacy).*/=/g' /usr/lib/waydroid/data/scripts/waydroid-net.sh && \
+    ostree container commit
+
+# Homebrew
+RUN touch /.dockerenv && \
+    mkdir -p /var/home && \
+    mkdir -p /var/roothome && \
+    curl -Lo /tmp/brew-install https://raw.githubusercontent.com/Homebrew/install/HEAD/install.sh && \
+    chmod +x /tmp/brew-install && \
+    /tmp/brew-install && \
+    tar --zstd -cvf /usr/share/homebrew.tar.zst /home/linuxbrew/.linuxbrew && \
     ostree container commit
 
 # Cleanup & Finalize
@@ -577,7 +594,6 @@ RUN /usr/libexec/containerbuild/build-initramfs && \
     sed -i 's@enabled=1@enabled=0@g' /etc/yum.repos.d/_copr_kylegospo-latencyflex.repo && \
     sed -i 's@enabled=1@enabled=0@g' /etc/yum.repos.d/_copr_kylegospo-obs-vkcapture.repo && \
     sed -i 's@enabled=1@enabled=0@g' /etc/yum.repos.d/_copr_kylegospo-wallpaper-engine-kde-plugin.repo && \
-    sed -i 's@enabled=1@enabled=0@g' /etc/yum.repos.d/_copr_kylegospo-vk_hdr_layer.repo && \
     sed -i 's@enabled=1@enabled=0@g' /etc/yum.repos.d/_copr_ycollet-audinux.repo && \
     sed -i 's@enabled=1@enabled=0@g' /etc/yum.repos.d/_copr_kylegospo-rom-properties.repo && \
     sed -i 's@enabled=1@enabled=0@g' /etc/yum.repos.d/_copr_kylegospo-joycond.repo && \
@@ -592,10 +608,12 @@ RUN /usr/libexec/containerbuild/build-initramfs && \
     sed -i 's@enabled=1@enabled=0@g' /etc/yum.repos.d/rpmfusion-nonfree.repo && \
     sed -i 's@enabled=1@enabled=0@g' /etc/yum.repos.d/rpmfusion-nonfree-updates.repo && \
     sed -i 's@enabled=1@enabled=0@g' /etc/yum.repos.d/rpmfusion-nonfree-updates-testing.repo && \
-    sed -i 's/#DefaultTimeoutStopSec.*/DefaultTimeoutStopSec=15s/' /usr/lib/systemd/user.conf && \
-    sed -i 's/#DefaultTimeoutStopSec.*/DefaultTimeoutStopSec=15s/' /usr/lib/systemd/system.conf && \
     mkdir -p /usr/etc/flatpak/remotes.d && \
     curl -Lo /usr/etc/flatpak/remotes.d/flathub.flatpakrepo https://dl.flathub.org/repo/flathub.flatpakrepo && \
+    systemctl enable brew-dir-fix.service && \
+    systemctl enable brew-setup.service && \
+    systemctl enable brew-upgrade.timer && \
+    systemctl enable brew-update.timer && \
     systemctl enable com.system76.Scheduler.service && \
     systemctl enable btrfs-dedup@var-home.timer && \
     systemctl enable displaylink.service && \
@@ -682,7 +700,6 @@ RUN rpm-ostree install \
     vpower \
     ds-inhibit \
     steam_notif_daemon \
-    ryzenadj \
     sdgyrodsu \
     ibus-pinyin \
     ibus-table-chinese-cangjie \
@@ -736,7 +753,6 @@ RUN /usr/libexec/containerbuild/image-info && \
     ; fi && \
     sed -i 's@\[Desktop Entry\]@\[Desktop Entry\]\nNoDisplay=true@g' /usr/share/applications/input-remapper-gtk.desktop && \
     cp "/usr/share/ublue-os/firstboot/yafti.yml" "/usr/etc/yafti.yml" && \
-    sed -i 's/#HandlePowerKey=poweroff/HandlePowerKey=suspend/g' /usr/lib/systemd/logind.conf && \
     sed -i 's@enabled=1@enabled=0@g' /etc/yum.repos.d/_copr_ublue-os-akmods.repo && \
     sed -i 's@enabled=1@enabled=0@g' /etc/yum.repos.d/_copr_kylegospo-bazzite.repo && \
     sed -i 's@enabled=1@enabled=0@g' /etc/yum.repos.d/_copr_kylegospo-bazzite-multilib.repo && \
@@ -771,6 +787,7 @@ RUN /usr/libexec/containerbuild/image-info && \
     systemctl disable batterylimit.service && \
     ostree container commit
 
+FROM ghcr.io/ublue-os/akmods-nvidia:${KERNEL_FLAVOR}-${FEDORA_MAJOR_VERSION} as nvidia-akmods
 FROM bazzite as bazzite-nvidia
 
 ARG IMAGE_NAME="${IMAGE_NAME:-bazzite-nvidia}"
@@ -798,7 +815,7 @@ RUN rpm-ostree override remove \
     ostree container commit
 
 # Install NVIDIA driver
-COPY --from=ghcr.io/ublue-os/akmods-nvidia:${KERNEL_FLAVOR}-${FEDORA_MAJOR_VERSION} /rpms /tmp/akmods-rpms
+COPY --from=nvidia-akmods /rpms /tmp/akmods-rpms
 RUN sed -i 's@enabled=0@enabled=1@g' /etc/yum.repos.d/rpmfusion-nonfree.repo && \
     sed -i 's@enabled=0@enabled=1@g' /etc/yum.repos.d/rpmfusion-nonfree-updates.repo && \
     sed -i 's@enabled=0@enabled=1@g' /etc/yum.repos.d/rpmfusion-nonfree-updates-testing.repo && \
